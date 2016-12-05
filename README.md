@@ -1,11 +1,14 @@
 # LightSwitch Demo App
-This example shows how to build a complete app using the DeviceDrive SDK to manage DeviceDrive WRF devices.
+This example shows how to build a complete app using the DeviceDrive SDK to manage DeviceDrive WRF devices. 
+
+The example builds upon the Light Switch example used in our documentation and tutorials where you can follow the steps on how to build a light switch device using the DeviceDrive WRF unit.
+
+The demo contains a Xamarin project for iOS and Android (can be opened in Visual Studio) showing you how to use the SDK to build an end-to-end solution in a mobile app.
 
 ## Getting Started
-Follow the tutorials to get the basic knowledge about the DeviceDrive Cloud here:
+Start by going through the getting started videos and tutorials to get the basic knowledge about the DeviceDrive Cloud here:
 
-[<TODO: Link>](Link)
-
+[TODO](Link)
 
 ## Requirements 
 
