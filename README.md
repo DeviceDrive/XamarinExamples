@@ -10,7 +10,18 @@ Start by going through the getting started videos and tutorials to get the basic
 
 [TODO](Link)
 
+After downloading the source code you need to update your application id and secret to get the example to work.
+
+### Android
+Open the file ```MainActivity.cs``` in the Android project and add your application id and secret (look for the TODO comment)
+
+### iOS
+Open the file ```AppDelegate.cs``` in the iOS project and add your application id and secret (look for the TODO comment)
+
 ## Requirements 
+If you want to use the example and SDK to build your own app in Xamarin, just install our SDK using the NuGet package ```DeviceDrive.SDK 0.1.31-alpha``` (remember to allow for prerelease packages) in your solution (remember to install in all projects).
+
+In addition there are some settings that needs to be added to the iOS and Android project:
 
 ### iOS
 info.plist: 
