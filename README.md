@@ -6,9 +6,7 @@ The example builds upon the Light Switch example used in our documentation and t
 The demo contains a Xamarin project for iOS and Android (can be opened in Visual Studio) showing you how to use the SDK to build an end-to-end solution in a mobile app.
 
 ## Getting Started
-Start by going through the getting started videos and tutorials to get the basic knowledge about the DeviceDrive Cloud here:
-
-[TODO](Link)
+Start by going through the getting started videos and tutorials to get the basic knowledge about the DeviceDrive Cloud and how you set up and configure your products, applications and devices.
 
 After downloading the source code you need to update your application id and secret to get the example to work.
 
@@ -24,7 +22,8 @@ If you want to use the example and SDK to build your own app in Xamarin, just in
 In addition there are some settings that needs to be added to the iOS and Android project:
 
 ### iOS
-info.plist: 
+
+To be able to communicate with a device using Wifi and SSL on iOS, you need to add the following settings to your ```Info.plist``` file in the iOS project (this has already been added in the demo project):
 
 ```
 <key>NSAppTransportSecurity</key>
@@ -35,9 +34,8 @@ info.plist:
 
 ```
 
-
 ### Android
-Permissions:
+Android needs the following permissions in the ```AndroidManifest.xml``` file (already been added in the demo project):
 
 ```
 <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
