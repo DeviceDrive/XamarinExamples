@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+		xmlns:local="clr-namespace:LightSwitch;assembly=LightSwitch"
+		x:Class="LightSwitch.MainPage">
+	<ContentPage.Resources>
+    	<ResourceDictionary>
+      		<local:PropertyCellTemplateSelector x:Key="PropertyTemplateSelector"></local:PropertyCellTemplateSelector>
+    	</ResourceDictionary>
+  	</ContentPage.Resources>
+
+	<ContentPage.Content>
+
+		<Grid>
+			<Grid IsVisible="{Binding IsLoadingDevices}">
+				<ActivityIndicator IsRunning="true" VerticalOptions="Center" HorizontalOptions="Center"></ActivityIndicator>
+			</Grid>
+			
+			<Grid IsVisible="{Binding IsDevicesVisible}">
+				
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*"></RowDefinition>
+					<RowDefinition Height="60"></RowDefinition>
+				</Grid.RowDefinitions>
+				
+				<StackLayout Orientation="Vertical" Padding="24" Spacing="14">
+					<Label Text="Selected Device:" HorizontalTextAlignment="Center"/>
+					<Button Text="{Binding SelectedDeviceName}" Command="{Binding SelectDeviceCommand}" Style="{StaticResource ButtonStyle}" BackgroundColor="#127dc9" TextColor="White"></Button>
+					<Grid>
+						<ListView ItemsSource="{Binding SelectedDeviceProperties}"
+							SeparatorVisibility="None"
+							IsVisible="{Binding IsDevicePropertiesVisible}"
+							ItemTemplate="{StaticResource PropertyTemplateSelector}">
+						</ListView>
+						<Grid IsVisible="{Binding IsLoadingDeviceProperties}">
+							<ActivityIndicator IsRunning="true" VerticalOptions="Center" HorizontalOptions="Center"></ActivityIndicator>
+						</Grid>
+					</Grid>
+				</StackLayout>
+
+				<StackLayout HeightRequest="70" Grid.Row="1" Spacing="0" Padding="0">
+					<BoxView BackgroundColor="Gray" HeightRequest="0.5"/>
+					<ContentView Padding="6" BackgroundColor="#ECECEC">
+						<Button Text="Add LightSwitch Device" Command="{Binding AdddDeviceCommand}" 
+							BackgroundColor="Green" TextColor="White" Style="{StaticResource ButtonStyle}"></Button>
+					</ContentView>
+				</StackLayout>
+				
+			</Grid>
+		</Grid>
+	</ContentPage.Content>
+</ContentPage>

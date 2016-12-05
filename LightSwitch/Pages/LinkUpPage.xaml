@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage 
+		xmlns="http://xamarin.com/schemas/2014/forms" 
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+		xmlns:controls="clr-namespace:LightSwitch;assembly=LightSwitch"
+		x:Class="LightSwitch.LinkUpPage">
+	<ContentPage.Content>
+
+		<ContentView Padding="22,44,22,22">
+
+			<controls:WizardLayout Page="{Binding ActivePageNumber}">
+
+				<!-- Enter name of new device -->
+				<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
+					<Label HorizontalTextAlignment="Center" Text="Enter name for your new LightSwitch device"/>
+					<Entry Placeholder="Enter Device Name" Text="{Binding DeviceName}"/>
+					<StackLayout Orientation="Horizontal" Spacing="24" HorizontalOptions="FillAndExpand">
+						<Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand" Style="{StaticResource RoundButtonStyle}"/>
+						<Button Text="Next" Command="{Binding EnterWifiPasswordCommand}" HorizontalOptions="FillAndExpand" Style="{StaticResource RoundButtonStyle}"/>
+					</StackLayout>
+				</StackLayout>
+
+				<!-- Enter Wifi Password  -->
+				<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
+					<Label HorizontalTextAlignment="Center" Text="Enter wifi password for the wifi network:"/>
+					<Label HorizontalTextAlignment="Center" FontAttributes="Bold" Text="{Binding WifiNetworkName}"/>
+					<Entry Placeholder="Enter Wifi Password" Text="{Binding WifiPassword}" Keyboard="Default"/>
+					<Button Text="Next" Command="{Binding SelectDeviceCommand}" Style="{StaticResource RoundButtonStyle}"/>
+				</StackLayout>
+
+				<!-- Select Device   -->
+				<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center" Orientation="Vertical">
+
+					<StackLayout Padding="24" Spacing="24" IsVisible="{Binding IsManualNetworkRegistration}">
+						<Label Text="Open the settings app on your iPhone/iPad and connect to the DeviceDrive network." HorizontalTextAlignment="Center"/>
+						<Image Source="icon_and_settings"></Image>
+						<ActivityIndicator IsRunning="true" HorizontalOptions="Center" VerticalOptions="Center"/>
+						<Label Text="We'll be waiting." HorizontalTextAlignment="Center"/>
+						<Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand" Style="{StaticResource RoundButtonStyle}"/>
+					</StackLayout>
+
+					<StackLayout Padding="24" Spacing="24" IsVisible="{Binding SupportsListingWifiNetworks}">
+						<Grid>													
+
+							<StackLayout Orientation="Vertical" Padding="24" Spacing="24" IsVisible="{Binding NoDevicesFoundVisible}">
+								<Label Text="No Devices Found" HorizontalTextAlignment="Center"/>
+								<Button Text="Reload" HorizontalOptions="Center" Command="{Binding SearchAgainCommand}"/>
+							</StackLayout>
+
+							<StackLayout Orientation="Vertical">
+								<Label Text="Select Device:" HorizontalTextAlignment="Center"/>
+								<ListView BackgroundColor="#ECECEC"
+										ItemsSource="{Binding AvailableDevices}"
+										ItemSelected="Handle_ItemSelected"
+										SeparatorVisibility="None">
+									<ListView.ItemTemplate>
+								        <DataTemplate>
+								          <TextCell Text="{Binding .}"/>
+								        </DataTemplate>
+								    </ListView.ItemTemplate>
+								</ListView>
+								<ActivityIndicator IsRunning="{Binding IsLoadingDevices}" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding IsLoadingDevices}"/>
+								<Label Text="{Binding WaitingLabel}" HorizontalTextAlignment="Center"/>
+							</StackLayout>
+							
+						</Grid>
+					</StackLayout>
+					
+				</StackLayout>
+
+				<!-- Configure device -->
+				<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
+					<Label Text="Please wait while we configure your device..." HorizontalTextAlignment="Center"/>
+					<ActivityIndicator IsRunning="true" HorizontalOptions="Center"/>
+					<Label Text="{Binding RegistrationProgress}" HorizontalTextAlignment="Center"/>
+					<Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand" Style="{StaticResource RoundButtonStyle}"/>
+				</StackLayout>
+
+				<!-- Done -->
+				<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
+					<Label Text="Your LightSwitch device was successfully linked up!" HorizontalTextAlignment="Center"/>
+					<Button Text="Done" Command="{Binding DoneCommand}" HorizontalOptions="FillAndExpand" Style="{StaticResource RoundButtonStyle}"/>
+				</StackLayout>
+				
+			</controls:WizardLayout>
+			
+		</ContentView>
+		
+	</ContentPage.Content>
+</ContentPage>

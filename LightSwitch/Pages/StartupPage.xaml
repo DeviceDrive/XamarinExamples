@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage 
+		xmlns="http://xamarin.com/schemas/2014/forms" 
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+		xmlns:controls="clr-namespace:LightSwitch;assembly=LightSwitch"
+		x:Class="LightSwitch.StartupPage">
+	<ContentPage.Content>
+					
+		<ContentView Padding="22,44,22,22" BackgroundColor="White">
+			<controls:WizardLayout Page="{Binding StartupPageNumber}">
+
+				<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
+					<Label HorizontalTextAlignment="Center" Text="Welcome to the LightSwitch App!"/>
+					<Image Source="{Binding LigthSwitchLogo}" HeightRequest="140"/>
+					<Button Text="Next" Command="{Binding NextCommand}" Style="{StaticResource RoundButtonStyle}"/>
+				</StackLayout>
+
+				<Grid>
+					<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
+						<Label HorizontalTextAlignment="Center" Text="To use the LightSwitch App you need to be logged in. Login or register with a new account here."/>
+						<Button Text="Login" Command="{Binding SignInCommand}" Style="{StaticResource RoundButtonStyle}"/>
+						<Button Text="Sign Up" Command="{Binding SignUpCommand}" Style="{StaticResource RoundButtonStyle}"/>					
+					</StackLayout>
+					<Grid IsVisible="{Binding IsInAuthentication}" BackgroundColor="White">
+						<ActivityIndicator IsRunning="{Binding IsInAuthentication}" VerticalOptions="Center" HorizontalOptions="Center"></ActivityIndicator>
+					</Grid>
+				</Grid>
+
+				<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
+					<Label HorizontalTextAlignment="Center" Text="You are now ready to use the app with your LightSwitch devices!"/>
+					<Button Text="Done" Command="{Binding DoneCommand}" Style="{StaticResource RoundButtonStyle}"/>			
+				</StackLayout>
+				
+			</controls:WizardLayout> 
+
+		</ContentView>		
+	</ContentPage.Content>
+</ContentPage>
