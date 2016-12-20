@@ -69,19 +69,19 @@ namespace LightSwitch
 			MessagingCenter.Subscribe<App>(this, App.AppOnSleepMessage, async (msg) =>
 			{
 				if (SelectedDevice != null)
-					await DeviceDriveManager.Current.Devices.StopDeviceNotificationUpdatesAsync(new DeviceModel[] { SelectedDevice });
+					await DeviceDriveManager.Current.Data.StopDeviceNotificationUpdatesAsync(new DeviceModel[] { SelectedDevice });
 			});
 
 			MessagingCenter.Subscribe<App>(this, App.AppOnResumeMessage, async (msg) =>
 			{
 				if (SelectedDevice != null)
-					await DeviceDriveManager.Current.Devices.StartDeviceNofiticationUpdatesAsync(new DeviceModel[] { SelectedDevice });
+					await DeviceDriveManager.Current.Data.StartDeviceNotiticationUpdatesAsync(new DeviceModel[] { SelectedDevice });
 			});
 
 			MessagingCenter.Subscribe<BoolPropertyCell, DevicePropertyModel>(
 				this, BoolPropertyCell.BoolPropertyChangedMessage, async (sender, model) =>
 				{
-					var result = await DeviceDriveManager.Current.Devices.UpdateDevicePropertyValue(SelectedDevice, model.Name, model.Value);
+					var result = await DeviceDriveManager.Current.Data.UpdateDevicePropertyValue(SelectedDevice, model.Name, model.Value);
 					System.Diagnostics.Debug.WriteLine(result);
 				});
 
@@ -124,7 +124,7 @@ namespace LightSwitch
 					await SetSelectedDeviceAsync(newSelectedDevice);
 			});
 
-			DeviceDriveManager.Current.Devices.DeviceDataUpdated += Devices_DeviceDataUpdated;
+			DeviceDriveManager.Current.Data.DeviceDataUpdated += Devices_DeviceDataUpdated;
 		}
 
 		#region Properties
@@ -333,13 +333,13 @@ namespace LightSwitch
 		{
 			IsLoadingDeviceProperties = true;
 
-			await DeviceDriveManager.Current.Devices.UpdateDataValuesAsync(device);
-			var props = await DeviceDriveManager.Current.Devices.GetPropertiesAsync(device);
+			await DeviceDriveManager.Current.Data.UpdateDataValuesAsync(device);
+			var props = await DeviceDriveManager.Current.Data.GetPropertiesAsync(device);
 			SelectedDeviceProperties.Clear();
 			foreach (var prop in props)
 				SelectedDeviceProperties.Add(prop);
 
-			await DeviceDriveManager.Current.Devices.StartDeviceNofiticationUpdatesAsync(new DeviceModel[] { SelectedDevice });
+			await DeviceDriveManager.Current.Data.StartDeviceNotiticationUpdatesAsync(new DeviceModel[] { SelectedDevice });
 
 			IsLoadingDeviceProperties = false;
 			IsDevicePropertiesVisible = true;
@@ -353,7 +353,7 @@ namespace LightSwitch
 			{
 				Device.BeginInvokeOnMainThread(async () =>
 				{
-					var props = await DeviceDriveManager.Current.Devices.GetPropertiesAsync(deviceToUpdate);
+					var props = await DeviceDriveManager.Current.Data.GetPropertiesAsync(deviceToUpdate);
 					if (props != null)
 					{
 						if (props.Count() != SelectedDeviceProperties.Count())
