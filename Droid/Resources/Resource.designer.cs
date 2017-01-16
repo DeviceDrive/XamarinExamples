@@ -29,6 +29,7 @@ namespace LightSwitch.Droid
 			global::Microsoft.Identity.Client.Resource.Id.agentWebView = global::LightSwitch.Droid.Resource.Id.agentWebView;
 			global::Microsoft.Identity.Client.Resource.Layout.WebAuthenticationBroker = global::LightSwitch.Droid.Resource.Layout.WebAuthenticationBroker;
 			global::Microsoft.Identity.Client.Resource.String.ApplicationName = global::LightSwitch.Droid.Resource.String.ApplicationName;
+			global::Xamarin.Forms.Platform.Android.Resource.Attribute.actionBarSize = global::LightSwitch.Droid.Resource.Attribute.actionBarSize;
 			global::DeviceDrive.SDK.Droid.Resource.Animation.abc_fade_in = global::LightSwitch.Droid.Resource.Animation.abc_fade_in;
 			global::DeviceDrive.SDK.Droid.Resource.Animation.abc_fade_out = global::LightSwitch.Droid.Resource.Animation.abc_fade_out;
 			global::DeviceDrive.SDK.Droid.Resource.Animation.abc_grow_fade_in_from_bottom = global::LightSwitch.Droid.Resource.Animation.abc_grow_fade_in_from_bottom;
@@ -1311,7 +1312,6 @@ namespace LightSwitch.Droid
 			global::DeviceDrive.SDK.Droid.Resource.Styleable.ViewStubCompat_android_id = global::LightSwitch.Droid.Resource.Styleable.ViewStubCompat_android_id;
 			global::DeviceDrive.SDK.Droid.Resource.Styleable.ViewStubCompat_android_inflatedId = global::LightSwitch.Droid.Resource.Styleable.ViewStubCompat_android_inflatedId;
 			global::DeviceDrive.SDK.Droid.Resource.Styleable.ViewStubCompat_android_layout = global::LightSwitch.Droid.Resource.Styleable.ViewStubCompat_android_layout;
-			global::Xamarin.Forms.Platform.Android.Resource.Attribute.actionBarSize = global::LightSwitch.Droid.Resource.Attribute.actionBarSize;
 		}
 		
 		public partial class Animation
