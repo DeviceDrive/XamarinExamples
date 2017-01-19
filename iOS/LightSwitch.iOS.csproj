@@ -135,22 +135,22 @@
       <HintPath>..\packages\Xamarin.Forms.2.3.3.175\lib\Xamarin.iOS10\Xamarin.Forms.Xaml.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.Introspection">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.37-alpha\lib\Xamarin.iOS10\DeviceDrive.Introspection.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.39-alpha\lib\Xamarin.iOS10\DeviceDrive.Introspection.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.SDK.Clients">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.37-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Clients.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.39-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Clients.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.SDK.Contracts">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.37-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Contracts.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.39-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.SDK">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.37-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.39-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.SDK.Services">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.37-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Services.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.39-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Services.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.SDK.Touch">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.37-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Touch.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.39-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Touch.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
