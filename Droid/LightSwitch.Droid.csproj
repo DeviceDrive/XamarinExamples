@@ -111,19 +111,19 @@
       <HintPath>..\packages\SimpleInjector.3.3.2\lib\netstandard1.0\SimpleInjector.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.SDK.Clients">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.39-alpha\lib\MonoAndroid10\DeviceDrive.SDK.Clients.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.40-alpha\lib\MonoAndroid10\DeviceDrive.SDK.Clients.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.SDK.Contracts">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.39-alpha\lib\MonoAndroid10\DeviceDrive.SDK.Contracts.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.40-alpha\lib\MonoAndroid10\DeviceDrive.SDK.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.SDK">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.39-alpha\lib\MonoAndroid10\DeviceDrive.SDK.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.40-alpha\lib\MonoAndroid10\DeviceDrive.SDK.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.SDK.Droid">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.39-alpha\lib\MonoAndroid10\DeviceDrive.SDK.Droid.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.40-alpha\lib\MonoAndroid10\DeviceDrive.SDK.Droid.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.SDK.Services">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.39-alpha\lib\MonoAndroid10\DeviceDrive.SDK.Services.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.40-alpha\lib\MonoAndroid10\DeviceDrive.SDK.Services.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
