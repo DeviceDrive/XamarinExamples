@@ -31,8 +31,6 @@ namespace LightSwitch
 
 			Title = "LightSwitch";
 
-			DeviceDriveManager.Current.Preferences.TestEnvironmentActivated = true;
-
 			BindingContext = this;
 				
 		}
