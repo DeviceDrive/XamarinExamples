@@ -35,9 +35,12 @@ namespace LightSwitch
 					var currentValue = (string)converter.ConvertBack(_switch.IsToggled, typeof(bool), null, null);
 					if (!currentValue.Equals((BindingContext as DevicePropertyModel).Value))
 					{
-						(BindingContext as DevicePropertyModel).Value = (string)converter.ConvertBack(_switch.IsToggled, typeof(bool), null, null);
+						var newValue = new Tuple<string, string>(
+							(BindingContext as DevicePropertyModel).Name,
+							(string)converter.ConvertBack(_switch.IsToggled, typeof(bool), null, null));
+						
 						MessagingCenter.Send(
-							this, BoolPropertyChangedMessage, BindingContext as DevicePropertyModel);
+							this, BoolPropertyChangedMessage, newValue);
 					}
 				}
 			};
