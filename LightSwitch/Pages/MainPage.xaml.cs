@@ -76,10 +76,10 @@ namespace LightSwitch
 					await DeviceDriveManager.Current.Data.StartDeviceNotiticationUpdatesAsync(new DeviceModel[] { SelectedDevice });
 			});
 
-			MessagingCenter.Subscribe<BoolPropertyCell, DevicePropertyModel>(
+			MessagingCenter.Subscribe<BoolPropertyCell, Tuple<string, string>>(
 				this, BoolPropertyCell.BoolPropertyChangedMessage, async (sender, model) =>
 				{
-					var result = await DeviceDriveManager.Current.Data.UpdateDevicePropertyValue(SelectedDevice, model.Name, model.Value);
+					var result = await DeviceDriveManager.Current.Data.UpdateDevicePropertyValue(SelectedDevice, model.Item1, model.Item2);
 					System.Diagnostics.Debug.WriteLine(result);
 				});
 
