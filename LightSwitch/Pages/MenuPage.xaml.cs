@@ -8,7 +8,6 @@ namespace LightSwitch
 {
 	public partial class MenuPage : ContentPage
 	{
-		public const string SignOuMessage = "SignOuMessage";
 		public const string DeleteActiveDeviceMessage = "DeleteActiveDeviceMessage";
 		public const string LinkUpActiveDeviceMessage = "LinkUpActiveDeviceMessage";
 
@@ -68,8 +67,6 @@ namespace LightSwitch
 						// Handle cancellation
 						return;
 					}
-
-					MessagingCenter.Send(this, SignOuMessage);
 				});
 			}
 		}

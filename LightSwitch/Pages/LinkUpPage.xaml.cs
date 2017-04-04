@@ -539,7 +539,7 @@ namespace LightSwitch
 			IsConfiguringDevice = true;
 
 			// Start linkup process
-			DeviceDriveManager.Current.LinkUp.StateChanged += LinkUp_StateChanged;
+			DeviceDriveManager.Current.LinkUpStateChanged += LinkUp_StateChanged;
 
 			try
 			{
@@ -552,7 +552,7 @@ namespace LightSwitch
 					return;
 
 				// Perform linkup
-				await DeviceDriveManager.Current.LinkUp.LinkUpDeviceAsync(
+				await DeviceDriveManager.Current.LinkUpDeviceAsync(
 					DeviceToken, SelectedDeviceSSID, WifiPassword, SelectedDeviceSSID, IsNewLinkUp);
 
 				// We are done
@@ -578,7 +578,7 @@ namespace LightSwitch
 			}
 			finally
 			{
-				DeviceDriveManager.Current.LinkUp.StateChanged -= LinkUp_StateChanged;
+				DeviceDriveManager.Current.LinkUpStateChanged -= LinkUp_StateChanged;
 			}
 		}
 
@@ -633,7 +633,7 @@ namespace LightSwitch
 			try
 			{
 				// Call Device API endpoint and ask for a new device token
-				var deviceRegistration = await DeviceDriveManager.Current.Devices.GetTokenForNewDevice(DeviceName);
+				var deviceRegistration = await DeviceDriveManager.Current.CreateNewDevice(DeviceName);
 
 				// If no token was set, show to user and display error
 				if (string.IsNullOrEmpty(deviceRegistration.Token))
@@ -658,7 +658,7 @@ namespace LightSwitch
 			{
 				IsLoadingDevices = true;
 
-				var availableNetworks = await DeviceDriveManager.Current.LinkUp.GetAvailableDevicesAsync(null);
+				var availableNetworks = await DeviceDriveManager.Current.GetAvailableDevicesAsync(null);
 
 				foreach(var network in availableNetworks)
 					AvailableDevices.Add(network);

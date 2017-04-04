@@ -21,10 +21,11 @@ namespace LightSwitch
 		Command _selectDeviceCommand;
 		readonly ObservableCollection<DeviceModel> _devices = new ObservableCollection<DeviceModel>();
 		readonly ObservableCollection<DevicePropertyModel> _selectedDeviceProperties = new ObservableCollection<DevicePropertyModel>();
+		readonly IDeviceDrivePlatform _platform;
 
 		#endregion
 
-		public MainPage()
+		public MainPage(IDeviceDrivePlatform platform)
 		{
 			InitializeComponent();
 			BindingContext = this;
@@ -32,7 +33,7 @@ namespace LightSwitch
 			Title = "LightSwitch";
 
 			BindingContext = this;
-				
+			_platform = platform;		
 		}
 
 		/// <summary>
@@ -47,10 +48,52 @@ namespace LightSwitch
 
 			_onAppearingCalled = true;
 
-			Device.BeginInvokeOnMainThread(async () =>
-			{
-				var isAuthenticated = await DeviceDriveManager.Current.Authentication.TryGetIsAuthenticatedAsync();
-				if (!DeviceDriveManager.Current.Preferences.WelcomeScreenDisplayed || !isAuthenticated)
+			DeviceDriveManager.Current.Initialized += async (sender, e) => { 
+
+				// Switch to the test environment (TODO: Remove before committing!)
+				DeviceDriveManager.Current.Preferences.TestEnvironmentActivated = true;
+
+				// Subscribe to the sleep/resume messages from the main app class
+				MessagingCenter.Subscribe<App>(this, App.AppOnResumeMessage, async (obj) => await DeviceDriveManager.Current.OnResumedAsync()); 
+				MessagingCenter.Subscribe<App>(this, App.AppOnSleepMessage, async (obj) => await DeviceDriveManager.Current.OnPausedAsync());
+
+				// Whenever the bool cell property changes its value, we need to update the property in the SDK
+				MessagingCenter.Subscribe<BoolPropertyCell, Tuple<string, string>>(
+					this, BoolPropertyCell.BoolPropertyChangedMessage, async (sender2, model) => {
+						await DeviceDriveManager.Current.SetDevicePropertyValueAsync(SelectedDevice, model.Item1, model.Item2);
+					});
+
+				// Handle delete active device message from the menu page
+				MessagingCenter.Subscribe<MenuPage>(this, MenuPage.DeleteActiveDeviceMessage, async (obj) =>
+				{
+					// Delete active device
+					if (SelectedDevice != null)
+					{
+						if (await DisplayAlert(Title, $"Delete {SelectedDevice.Name}?", "OK", "Cancel"))
+						{
+							SelectedDevice = null;
+							await DeviceDriveManager.Current.DeleteDeviceAsync(SelectedDevice);
+						}
+					}
+				});
+
+				// Handle start linkup active device from the menu page
+				MessagingCenter.Subscribe<MenuPage>(this, MenuPage.LinkUpActiveDeviceMessage, async (obj) =>
+				{
+					// LinkUp Active Device again
+					if (SelectedDevice != null)
+						await Navigation.PushModalAsync(new LinkUpPage(SelectedDevice));
+				});
+
+				// Events
+				DeviceDriveManager.Current.StateChanged += HandleSDKStateChanged;
+				DeviceDriveManager.Current.AuthenticatedChanged += HandleAuthenticationChanged;
+				DeviceDriveManager.Current.DevicesUpdated += HandleDevicesUpdated;
+				DeviceDriveManager.Current.DeviceUpdated += HandleDeviceUpdated;
+				DeviceDriveManager.Current.DeviceDeleted += HandleDeviceDeleted;
+
+				// Show welcome screen
+				if (!DeviceDriveManager.Current.Preferences.WelcomeScreenDisplayed)
 				{
 					MessagingCenter.Subscribe<StartupPage>(this, StartupPage.AuthenticatedMessage, async (obj) =>
 					{
@@ -61,72 +104,38 @@ namespace LightSwitch
 					await Navigation.PushModalAsync(new StartupPage());
 				}
 				else
-					await LoadDevicesAsync();
-			});
-
-			MessagingCenter.Subscribe<App>(this, App.AppOnSleepMessage, async (msg) =>
-			{
-				if (SelectedDevice != null)
-					await DeviceDriveManager.Current.Data.StopDeviceNotificationUpdatesAsync(new DeviceModel[] { SelectedDevice });
-			});
-
-			MessagingCenter.Subscribe<App>(this, App.AppOnResumeMessage, async (msg) =>
-			{
-				if (SelectedDevice != null)
-					await DeviceDriveManager.Current.Data.StartDeviceNotiticationUpdatesAsync(new DeviceModel[] { SelectedDevice });
-			});
-
-			MessagingCenter.Subscribe<BoolPropertyCell, Tuple<string, string>>(
-				this, BoolPropertyCell.BoolPropertyChangedMessage, async (sender, model) =>
 				{
-					var result = await DeviceDriveManager.Current.Data.UpdateDevicePropertyValue(SelectedDevice, model.Item1, model.Item2);
-					System.Diagnostics.Debug.WriteLine(result);
-				});
-
-			MessagingCenter.Subscribe<MenuPage>(this, MenuPage.SignOuMessage, async (obj) =>
-			{
-				var isAuthenticated = await DeviceDriveManager.Current.Authentication.TryGetIsAuthenticatedAsync();
-				if (!isAuthenticated)
-				{
-					IsDevicesVisible = false;
-
-					await Navigation.PushModalAsync(new StartupPage());
-				}
-			});
-
-			MessagingCenter.Subscribe<MenuPage>(this, MenuPage.DeleteActiveDeviceMessage, async (obj) =>
-			{
-				// Delete active device
-				if (SelectedDevice != null)
-				{
-					if (await DisplayAlert(Title, $"Delete {SelectedDevice.Name}?", "OK", "Cancel"))
-					{
-						SelectedDevice = null;
-						await DeviceDriveManager.Current.Devices.DeleteDeviceAsync(SelectedDevice);
+					// Check for authentication
+					if ((await DeviceDriveManager.Current.Authentication.TryGetIsAuthenticatedAsync()))
 						await LoadDevicesAsync();
-					}
+					else
+						await Navigation.PushModalAsync(new StartupPage());
 				}
-			});
+			};
 
-			MessagingCenter.Subscribe<MenuPage>(this, MenuPage.LinkUpActiveDeviceMessage, async (obj) =>
-			{
-				// LinkUp Active Device again
-				if (SelectedDevice != null)
-					await Navigation.PushModalAsync(new LinkUpPage(SelectedDevice));
-			});
+			// Start initialization
+			Task.Run(async () => await DeviceDriveManager.Current.InitializeAsync(
+				"78795c26-9ca8-4251-8cbb-0cb13850026f", "f2026cb1-27a0-4f1e-9fe3-12f46e070f03", _platform));	
 
-			MessagingCenter.Subscribe<LinkUpPage, string>(this, LinkUpPage.LinkUpFinishedSuccessMessage, async (sender, deviceName) => {
-				await LoadDevicesAsync();
-				var newSelectedDevice = Devices.FirstOrDefault(device => device.Name == deviceName);
-				if (newSelectedDevice != null)
-					await SetSelectedDeviceAsync(newSelectedDevice);
-			});
-
-			DeviceDriveManager.Current.Data.DeviceDataUpdated += Devices_DeviceDataUpdated;
 		}
 
 		#region Properties
 
+		/// <summary>
+		/// The StatusText property.
+		/// </summary>
+		public static BindableProperty StatusTextProperty = BindableProperty.Create(
+			nameof(StatusText), typeof(string), typeof(MainPage), null,
+			BindingMode.OneWay);
+
+		/// <summary>
+		/// Gets or sets the StatusText of the MainPage instance.
+		/// </summary>
+		public string StatusText
+		{
+			get { return (string)GetValue(StatusTextProperty); }
+			set { SetValue(StatusTextProperty, value); }
+		}
 		/// <summary>
 		/// The IsDevicesVisible property.
 		/// </summary>
@@ -144,10 +153,7 @@ namespace LightSwitch
 		public bool IsDevicesVisible
 		{
 			get { return (bool)GetValue(IsDevicesVisibleProperty); }
-			set
-			{
-				SetValue(IsDevicesVisibleProperty, value);
-			}
+			set { SetValue(IsDevicesVisibleProperty, value); }
 		}
 
 		/// <summary>
@@ -167,10 +173,7 @@ namespace LightSwitch
 		public bool IsLoadingDeviceProperties
 		{
 			get { return (bool)GetValue(IsLoadingDevicePropertiesProperty); }
-			set
-			{
-				SetValue(IsLoadingDevicePropertiesProperty, value);
-			}
+			set { SetValue(IsLoadingDevicePropertiesProperty, value); }
 		}
 
 		/// <summary>
@@ -190,10 +193,7 @@ namespace LightSwitch
 		public bool IsDevicePropertiesVisible
 		{
 			get { return (bool)GetValue(IsDevicePropertiesVisibleProperty); }
-			set
-			{
-				SetValue(IsDevicePropertiesVisibleProperty, value);
-			}
+			set { SetValue(IsDevicePropertiesVisibleProperty, value); }
 		}
 
 		/// <summary>
@@ -213,10 +213,7 @@ namespace LightSwitch
 		public bool IsLoadingDevices
 		{
 			get { return (bool)GetValue(IsLoadingDevicesProperty); }
-			set
-			{
-				SetValue(IsLoadingDevicesProperty, value);
-			}
+			set { SetValue(IsLoadingDevicesProperty, value); }
 		}
 
 		/// <summary>
@@ -226,6 +223,9 @@ namespace LightSwitch
 		{
 			get
 			{
+				if (!DeviceDriveManager.Current.IsInitialized)
+					return null;
+				
 				var id = DeviceDriveManager.Current.Preferences.GetObjectForKey(
 					() => Devices.FirstOrDefault()?.UserDeviceId);
 
@@ -241,38 +241,28 @@ namespace LightSwitch
 			}
 		}
 
-		public string SelectedDeviceName
-		{
-			get
-			{
-				return SelectedDevice?.Name;
-			}
-		}
-
-		public ObservableCollection<DevicePropertyModel> SelectedDeviceProperties
-		{
-			get
-			{
-				return _selectedDeviceProperties;
-			}
-		}
+		/// <summary>
+		/// Returns the name of the selected device
+		/// </summary>
+		public string SelectedDeviceName { get { return SelectedDevice?.Name; } }
 
 		/// <summary>
-		/// List of devices
+		/// Returns the list of properties for the selected device
 		/// </summary>
-		/// <value>The devices.</value>
-		public ObservableCollection<DeviceModel> Devices
-		{
-			get
-			{
-				return _devices;
-			}
-		}
+		public ObservableCollection<DevicePropertyModel> SelectedDeviceProperties { get { return _selectedDeviceProperties; } }
+
+		/// <summary>
+		/// Returns the list of devices
+		/// </summary>
+		public ObservableCollection<DeviceModel> Devices { get { return _devices; } }
 
 		#endregion
 
 		#region Commands
 
+		/// <summary>
+		/// Returns the command for selecting a device
+		/// </summary>
 		public Command SelectDeviceCommand
 		{
 			get
@@ -285,12 +275,20 @@ namespace LightSwitch
 					var index = buttons.IndexOf(retVal);
 					if (index > -1)
 					{
-						await SetSelectedDeviceAsync(Devices.ElementAt(index));
+						var device = Devices.ElementAt(index);
+
+						SelectedDevice = device;
+						await LoadDevicePropertiesAsync(device);
+
 					}
 				}));
 			}
 		}
 
+		/// <summary>
+		/// Returns the command adding a new device
+		/// </summary>
+		/// <value>The addd device command.</value>
 		public Command AdddDeviceCommand
 		{
 			get
@@ -302,80 +300,177 @@ namespace LightSwitch
 
 		#region Private Members
 
+		/// <summary>
+		/// Loads devices useing the SDK
+		/// </summary>
 		async Task LoadDevicesAsync()
 		{
-			var devices = await DeviceDriveManager.Current.Devices.GetDevicesAsync();
-			Devices.Clear();
-			foreach (var device in devices)
-				Devices.Add(device);
+			IsLoadingDevices = true;
+			IsDevicesVisible = !IsLoadingDevices;
 
-			IsDevicesVisible = true;
-			IsLoadingDevices = false;
-
-			OnPropertyChanged(nameof(SelectedDeviceName));
-
-			if (SelectedDevice != null)
-				await LoadDeviceDataAsync(SelectedDevice);
-		}
-
-		Task SetSelectedDeviceAsync(DeviceModel deviceModel)
-		{
-			IsLoadingDeviceProperties = true;
-			IsDevicePropertiesVisible = false;
-
-			SelectedDevice = deviceModel;
-			return LoadDeviceDataAsync(deviceModel);
-		}
-
-		async Task LoadDeviceDataAsync(DeviceModel device)
-		{
-			IsLoadingDeviceProperties = true;
-
-			await DeviceDriveManager.Current.Data.UpdateDataValuesAsync(device);
-			var props = await DeviceDriveManager.Current.Data.GetPropertiesAsync(device);
-			SelectedDeviceProperties.Clear();
-			foreach (var prop in props)
-				SelectedDeviceProperties.Add(prop);
-
-			await DeviceDriveManager.Current.Data.StartDeviceNotiticationUpdatesAsync(new DeviceModel[] { SelectedDevice });
-
-			IsLoadingDeviceProperties = false;
-			IsDevicePropertiesVisible = true;
-		}
-
-		void Devices_DeviceDataUpdated(object sender, DeviceDataUpdatedEventArgs e)
-		{
-			// find device in list and update
-			var deviceToUpdate = Devices.FirstOrDefault(dev => dev.UserDeviceId.Equals((sender as DeviceModel).UserDeviceId));
-			if (deviceToUpdate != null)
+			try
 			{
-				Device.BeginInvokeOnMainThread(async () =>
+				var devices = await DeviceDriveManager.Current.GetDevicesAsync();
+
+				Devices.Clear();
+				foreach (var device in devices)
+					Devices.Add(device);
+
+				// Update GUI
+				OnPropertyChanged(nameof(SelectedDeviceName));
+
+			}
+			finally
+			{
+				IsLoadingDevices = false;
+				IsDevicesVisible = !IsLoadingDevices;
+			}
+
+
+			// Update properties
+			await LoadDevicePropertiesAsync(SelectedDevice);
+		}
+
+		/// <summary>
+		/// Loads device data/properties
+		/// </summary>
+		async Task LoadDevicePropertiesAsync(DeviceModel device)
+		{
+			if (device == null)
+			{
+				SelectedDeviceProperties.Clear();
+				IsLoadingDeviceProperties = false;
+				IsDevicePropertiesVisible = !IsLoadingDeviceProperties;
+				return;
+			}
+
+			IsLoadingDeviceProperties = true;
+			IsDevicePropertiesVisible = !IsLoadingDeviceProperties;
+
+			try
+			{
+				// find device in list and update
+				var props = await DeviceDriveManager.Current.GetDevicePropertiesAsync(device);
+				if (props != null)
 				{
-					var props = await DeviceDriveManager.Current.Data.GetPropertiesAsync(deviceToUpdate);
-					if (props != null)
+					if (props.Count() != SelectedDeviceProperties.Count())
 					{
-						if (props.Count() != SelectedDeviceProperties.Count())
+						SelectedDeviceProperties.Clear();
+						foreach (var prop in props)
+							SelectedDeviceProperties.Add(prop);
+					}
+					else
+					{
+						foreach (var prop in props)
 						{
-							SelectedDeviceProperties.Clear();
-							foreach (var prop in props)
-								SelectedDeviceProperties.Add(prop);
-						}
-						else
-						{
-							foreach (var prop in props)
+							System.Diagnostics.Debug.WriteLine("Updating " + prop.Name + " = " + prop.Value);
+							var listItemProp = SelectedDeviceProperties.FirstOrDefault(p => p.Name == prop.Name);
+							if (listItemProp != null)
 							{
-								System.Diagnostics.Debug.WriteLine("Updating " + prop.Name + " = " + prop.Value);
-								var listItemProp = SelectedDeviceProperties.FirstOrDefault(p => p.Name == prop.Name);
-								if (listItemProp != null)
-								{
-									listItemProp.Name = prop.Name;
-									listItemProp.Value = prop.Value;
-									MessagingCenter.Send(this, PropertyUpdatedMessage, prop);
-								}
+								listItemProp.Name = prop.Name;
+								listItemProp.Value = prop.Value;
+								MessagingCenter.Send(this, PropertyUpdatedMessage, prop);
 							}
 						}
 					}
-				});
+				}
+			}
+			finally
+			{
+				IsLoadingDeviceProperties = false;
+				IsDevicePropertiesVisible = !IsLoadingDeviceProperties;
+			}
+		}
+
+		#endregion
+
+		#region Events
+
+		/// <summary>
+		/// Handles SDK state changes
+		/// </summary>
+		void HandleSDKStateChanged(object sender, StateChangedEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("SDK State changed to: " + e.NewState);
+
+			if (e.NewState == SDKState.Initialized)
+				StatusText = String.Empty;
+			else
+				StatusText = e.NewState.ToString();
+		}
+
+		/// <summary>
+		/// Handles SDK authentication changes
+		/// </summary>
+		async void HandleAuthenticationChanged(object sender, AuthenticationChangedEventArgs e)
+		{
+			if (!e.IsAuthenticated)
+			{
+				IsDevicesVisible = false;
+				await Navigation.PushModalAsync(new StartupPage());
+			}
+			else
+			{
+				IsDevicesVisible = true;
+			}
+		}
+
+		/// <summary>
+		/// Handles updates in the list of devices
+		/// </summary>
+		void HandleDevicesUpdated(object sender, DevicesUpdatedEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("HandleDevicesUpdated");
+
+			var selectedDevice = e.UpdatedDevices.FirstOrDefault(d => d.UserDeviceId == SelectedDevice?.UserDeviceId);
+
+			Devices.Clear();
+			foreach (var d in e.UpdatedDevices)
+				Devices.Add(d);
+
+			SelectedDevice = selectedDevice;
+		}
+
+		/// <summary>
+		/// Handles device property changes
+		/// </summary>
+		void HandleDeviceUpdated(object sender, DeviceUpdatedEventArgs e)
+		{
+			var listDevice = Devices.FirstOrDefault(p => p.UserDeviceId == e.Device.UserDeviceId);
+			if (listDevice == SelectedDevice)
+			{
+				foreach (var prop in e.Properties)
+				{
+					var listItemProp = SelectedDeviceProperties.FirstOrDefault(p => p.Name == prop.Name);
+					if (listItemProp != null)
+					{
+						// Update existing item
+						listItemProp.Name = prop.Name;
+						listItemProp.Value = prop.Value;
+						MessagingCenter.Send(this, PropertyUpdatedMessage, prop);
+					}
+					else
+					{
+						// Add new property
+						SelectedDeviceProperties.Add(prop);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Handles device deleted 
+		/// </summary>
+		async void HandleDeviceDeleted(object sender, DeviceDeletedEventArgs e)
+		{
+			// Update list of devices
+			var selectedDevice = SelectedDevice;
+			Devices.Remove(e.Device);
+
+			if (selectedDevice == e.Device)
+			{
+				SelectedDevice = Devices.FirstOrDefault();
+				await LoadDevicePropertiesAsync(SelectedDevice);
 			}
 		}
 
