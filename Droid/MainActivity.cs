@@ -23,14 +23,9 @@ namespace LightSwitch.Droid
 
 			base.OnCreate(savedInstanceState);
 
-			DeviceDriveManager.Current.Initialize(
-				// TODO: Add AppID and Application Secret here:
-				"", "",
-				new DeviceDriveDroidPlatform(this));
-
 			global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
 
-			LoadApplication(new App());
+			LoadApplication(new App(new DeviceDriveDroidPlatform(this)));
 		}
 
 		protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)

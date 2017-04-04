@@ -15,12 +15,7 @@ namespace LightSwitch.iOS
 		{
 			global::Xamarin.Forms.Forms.Init();
 
-			DeviceDriveManager.Current.Initialize(
-				// TODO: Add AppID and Application Secret here:
-				"", "",
-				new DeviceDriveTouchPlatform());
-
-			LoadApplication(new App());
+			LoadApplication(new App(new DeviceDriveTouchPlatform()));
 
 			return base.FinishedLaunching(app, options);
 		}
