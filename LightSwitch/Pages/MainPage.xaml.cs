@@ -50,9 +50,6 @@ namespace LightSwitch
 
 			DeviceDriveManager.Current.Initialized += async (sender, e) => { 
 
-				// Switch to the test environment (TODO: Remove before committing!)
-				DeviceDriveManager.Current.Preferences.TestEnvironmentActivated = true;
-
 				// Subscribe to the sleep/resume messages from the main app class
 				MessagingCenter.Subscribe<App>(this, App.AppOnResumeMessage, async (obj) => await DeviceDriveManager.Current.OnResumedAsync()); 
 				MessagingCenter.Subscribe<App>(this, App.AppOnSleepMessage, async (obj) => await DeviceDriveManager.Current.OnPausedAsync());
