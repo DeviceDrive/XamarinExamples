@@ -15,7 +15,7 @@ namespace LightSwitch
 		public const string AppOnSleepMessage = "AppOnSleepMessage";
 		public const string AppOnResumeMessage = "AppOnResumeMessage";
 
-		public App()
+		public App(IDeviceDrivePlatform platform)
 		{
 			InitializeComponent();
 
@@ -23,7 +23,7 @@ namespace LightSwitch
 			MainPage = new MasterDetailPage
 			{
 				Master = new MenuPage(),
-				Detail = new NavigationPage(new MainPage()),
+				Detail = new NavigationPage(new MainPage(platform)),
 			};
 		}
 

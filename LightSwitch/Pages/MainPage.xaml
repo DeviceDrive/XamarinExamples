@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
 		xmlns:local="clr-namespace:LightSwitch;assembly=LightSwitch"
@@ -14,6 +14,7 @@
 		<Grid>
 			<Grid IsVisible="{Binding IsLoadingDevices}">
 				<ActivityIndicator IsRunning="true" VerticalOptions="Center" HorizontalOptions="Center"></ActivityIndicator>
+				<Label VerticalOptions="Center" Text="{Binding StatusText}"/>
 			</Grid>
 			
 			<Grid IsVisible="{Binding IsDevicesVisible}">
@@ -33,7 +34,10 @@
 							ItemTemplate="{StaticResource PropertyTemplateSelector}">
 						</ListView>
 						<Grid IsVisible="{Binding IsLoadingDeviceProperties}">
-							<ActivityIndicator IsRunning="true" VerticalOptions="Center" HorizontalOptions="Center"></ActivityIndicator>
+							<StackLayout Orientation="Vertical" HorizontalOptions="Center">
+								<ActivityIndicator IsRunning="true" VerticalOptions="Center" HorizontalOptions="Center"></ActivityIndicator>
+								<Label VerticalOptions="Center" Text="{Binding StatusText}"/>
+							</StackLayout>
 						</Grid>
 					</Grid>
 				</StackLayout>

@@ -92,12 +92,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.iOS" />
-    <Reference Include="LinkUp.SDK.Xamarin">
-      <HintPath>..\packages\DeviceDrive.LinkUp.SDK.Xamarin.0.4.0.83\lib\Xamarin.iOS10\LinkUp.SDK.Xamarin.dll</HintPath>
-    </Reference>
-    <Reference Include="LinkUp.SDK.Xamarin.iOS">
-      <HintPath>..\packages\DeviceDrive.LinkUp.SDK.Xamarin.0.4.0.83\lib\Xamarin.iOS10\LinkUp.SDK.Xamarin.iOS.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Client">
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Client.2.2.1\lib\portable-net45+sl50+win+wpa81+wp80\Microsoft.AspNet.SignalR.Client.dll</HintPath>
     </Reference>
@@ -134,23 +128,23 @@
     <Reference Include="Xamarin.Forms.Xaml">
       <HintPath>..\packages\Xamarin.Forms.2.3.3.175\lib\Xamarin.iOS10\Xamarin.Forms.Xaml.dll</HintPath>
     </Reference>
+    <Reference Include="LinkUp.SDK.Xamarin">
+      <HintPath>..\packages\DeviceDrive.LinkUp.SDK.Xamarin.0.4.0.86\lib\Xamarin.iOS10\LinkUp.SDK.Xamarin.dll</HintPath>
+    </Reference>
+    <Reference Include="LinkUp.SDK.Xamarin.iOS">
+      <HintPath>..\packages\DeviceDrive.LinkUp.SDK.Xamarin.0.4.0.86\lib\Xamarin.iOS10\LinkUp.SDK.Xamarin.iOS.dll</HintPath>
+    </Reference>
+    <Reference Include="Polly">
+      <HintPath>..\packages\Polly.5.0.6\lib\netstandard1.0\Polly.dll</HintPath>
+    </Reference>
     <Reference Include="DeviceDrive.Introspection">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.42-alpha\lib\Xamarin.iOS10\DeviceDrive.Introspection.dll</HintPath>
-    </Reference>
-    <Reference Include="DeviceDrive.SDK.Clients">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.42-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Clients.dll</HintPath>
-    </Reference>
-    <Reference Include="DeviceDrive.SDK.Contracts">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.42-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Contracts.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.56-alpha\lib\Xamarin.iOS10\DeviceDrive.Introspection.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.SDK">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.42-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.dll</HintPath>
-    </Reference>
-    <Reference Include="DeviceDrive.SDK.Services">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.42-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Services.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.56-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.dll</HintPath>
     </Reference>
     <Reference Include="DeviceDrive.SDK.Touch">
-      <HintPath>..\packages\DeviceDrive.SDK.0.1.42-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Touch.dll</HintPath>
+      <HintPath>..\packages\DeviceDrive.SDK.0.1.56-alpha\lib\Xamarin.iOS10\DeviceDrive.SDK.Touch.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

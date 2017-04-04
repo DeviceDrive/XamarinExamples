@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage 
 		xmlns="http://xamarin.com/schemas/2014/forms" 
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
@@ -24,7 +24,7 @@
 				<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
 					<Label HorizontalTextAlignment="Center" Text="Enter wifi password for the wifi network:"/>
 					<Label HorizontalTextAlignment="Center" FontAttributes="Bold" Text="{Binding WifiNetworkName}"/>
-					<Entry Placeholder="Enter Wifi Password" Text="{Binding WifiPassword}" Keyboard="Default"/>
+					<Entry Placeholder="Enter Wifi Password" Text="{Binding WifiPassword}" Keyboard="Default" IsPassword="true"/>
 					<Button Text="Next" Command="{Binding SelectDeviceCommand}" Style="{StaticResource RoundButtonStyle}"/>
 				</StackLayout>
 
