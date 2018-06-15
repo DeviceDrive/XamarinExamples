@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="LightSwitch.TermsPage">
+	<ContentPage.Content>
+        <StackLayout Orientation="Vertical">
+            <Grid HeightRequest="50" Padding="15" VerticalOptions="Start" HorizontalOptions="FillAndExpand">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Row="0" Grid.Column="0" HeightRequest="50" Text="Terms and conditions" HorizontalOptions="FillAndExpand" Command="{Binding ShowTermsConditionsCommand}"></Button>
+                <Button Grid.Row="0" Grid.Column="1" HeightRequest="50" Text="Privacy policy" HorizontalOptions="FillAndExpand" Command="{Binding ShowPrivacyPolicyCommand}"></Button>
+            </Grid>
+            <WebView VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" Source="{Binding CurrentContent}"></WebView>
+            <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand" Margin="0" Padding="0" Spacing="0">
+                <Button Text="Reject" HorizontalOptions="FillAndExpand" Command="{Binding RejectCommand}"></Button>
+                <Button Text="Accept" HorizontalOptions="FillAndExpand" Command="{Binding AcceptCommand}"></Button>
+            </StackLayout>
+        </StackLayout>
+        
+	</ContentPage.Content>
+</ContentPage>

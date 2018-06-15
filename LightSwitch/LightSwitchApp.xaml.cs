@@ -6,6 +6,9 @@ using Xamarin.Forms.Xaml;
 
 using DeviceDrive.SDK;
 using System.Threading.Tasks;
+using Autofac;
+using DeviceDrive.SDK.Contracts;
+using DeviceDrive.SDK.Services;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 namespace LightSwitch
@@ -15,15 +18,21 @@ namespace LightSwitch
 		public const string AppOnSleepMessage = "AppOnSleepMessage";
 		public const string AppOnResumeMessage = "AppOnResumeMessage";
 
-		public App(IDeviceDrivePlatform platform)
+        private static IContainer _container;
+
+        public App(IDeviceDrivePlatform platform)
 		{
 			InitializeComponent();
 
-			// The root page of your application
-			MainPage = new MasterDetailPage
+            var builder = new ContainerBuilder();
+            builder.RegisterType<TermsService>().As<ITermsService>().SingleInstance();
+            _container = builder.Build();
+
+            // The root page of your application
+            MainPage = new MasterDetailPage
 			{
 				Master = new MenuPage(),
-				Detail = new NavigationPage(new MainPage(platform)),
+				Detail = new NavigationPage(new MainPage(platform, _container)),
 			};
 		}
 

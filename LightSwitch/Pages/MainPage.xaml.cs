@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
+using Autofac.Core;
 using DeviceDrive.SDK;
 using DeviceDrive.SDK.Contracts;
+using LightSwitch.Controls;
 using Xamarin.Forms;
 
 namespace LightSwitch
@@ -22,18 +26,26 @@ namespace LightSwitch
 		readonly ObservableCollection<DeviceModel> _devices = new ObservableCollection<DeviceModel>();
 		readonly ObservableCollection<DevicePropertyModel> _selectedDeviceProperties = new ObservableCollection<DevicePropertyModel>();
 		readonly IDeviceDrivePlatform _platform;
-
+        readonly ITermsService _termsService;
+        readonly IContainer _container;
+        
 		#endregion
 
-		public MainPage(IDeviceDrivePlatform platform)
+		public MainPage(IDeviceDrivePlatform platform, IContainer container)
 		{
 			InitializeComponent();
 			BindingContext = this;
 
 			Title = "LightSwitch";
 
-			BindingContext = this;
-			_platform = platform;		
+			_platform = platform;
+            _container = container;
+
+            using (var scope = container.BeginLifetimeScope())
+            {
+                _termsService = scope.Resolve<ITermsService>();
+            }
+            
 		}
 
 		/// <summary>
@@ -48,42 +60,67 @@ namespace LightSwitch
 
 			_onAppearingCalled = true;
 
-			DeviceDriveManager.Current.Initialized += async (sender, e) => { 
+			DeviceDriveManager.Current.Initialized += async (sender, e) => {
 
-				// Subscribe to the sleep/resume messages from the main app class
-				MessagingCenter.Subscribe<App>(this, App.AppOnResumeMessage, async (obj) => await DeviceDriveManager.Current.OnResumedAsync()); 
-				MessagingCenter.Subscribe<App>(this, App.AppOnSleepMessage, async (obj) => await DeviceDriveManager.Current.OnPausedAsync());
+                // Subscribe to the sleep/resume messages from the main app class
+                MessagingCenter.Subscribe<App>(this, App.AppOnResumeMessage, async (obj) => await DeviceDriveManager.Current.OnResumedAsync());
+                MessagingCenter.Subscribe<App>(this, App.AppOnSleepMessage, async (obj) => await DeviceDriveManager.Current.OnPausedAsync());
 
-				// Whenever the bool cell property changes its value, we need to update the property in the SDK
-				MessagingCenter.Subscribe<BoolPropertyCell, Tuple<string, string>>(
-					this, BoolPropertyCell.BoolPropertyChangedMessage, async (sender2, model) => {
-						await DeviceDriveManager.Current.SetDevicePropertyValueAsync(SelectedDevice, model.Item1, model.Item2);
-					});
+                // Whenever the bool cell property changes its value, we need to update the property in the SDK
+                MessagingCenter.Subscribe<BoolPropertyCell, Tuple<string, string>>(
+                    this, BoolPropertyCell.BoolPropertyChangedMessage, async (sender2, model) => {
+                        await DeviceDriveManager.Current.SetDevicePropertyValueAsync(SelectedDevice, model.Item1, model.Item2);
+                    });
 
-				// Handle delete active device message from the menu page
-				MessagingCenter.Subscribe<MenuPage>(this, MenuPage.DeleteActiveDeviceMessage, async (obj) =>
-				{
-					// Delete active device
-					if (SelectedDevice != null)
-					{
-						if (await DisplayAlert(Title, $"Delete {SelectedDevice.Name}?", "OK", "Cancel"))
-						{
-							SelectedDevice = null;
-							await DeviceDriveManager.Current.DeleteDeviceAsync(SelectedDevice);
-						}
-					}
-				});
+                // Handle delete active device message from the menu page
+                MessagingCenter.Subscribe<MenuPage>(this, MenuPage.DeleteActiveDeviceMessage, async (obj) =>
+                {
+                    // Delete active device
+                    if (SelectedDevice != null)
+                    {
+                        if (await DisplayAlert(Title, $"Delete {SelectedDevice.Name}?", "OK", "Cancel"))
+                        {
+                            SelectedDevice = null;
+                            await DeviceDriveManager.Current.DeleteDeviceAsync(SelectedDevice);
+                        }
+                    }
+                });
 
-				// Handle start linkup active device from the menu page
-				MessagingCenter.Subscribe<MenuPage>(this, MenuPage.LinkUpActiveDeviceMessage, async (obj) =>
-				{
-					// LinkUp Active Device again
-					if (SelectedDevice != null)
-						await Navigation.PushModalAsync(new LinkUpPage(SelectedDevice));
-				});
+                // Handle start linkup active device from the menu page
+                MessagingCenter.Subscribe<MenuPage>(this, MenuPage.LinkUpActiveDeviceMessage, async (obj) =>
+                {
+                    // LinkUp Active Device again
+                    if (SelectedDevice != null)
+                        await Navigation.PushModalAsync(new LinkUpPage(SelectedDevice));
+                });
 
-				// Events
-				DeviceDriveManager.Current.StateChanged += HandleSDKStateChanged;
+                // Handle start smartlinkup process menu page
+                MessagingCenter.Subscribe<MenuPage>(this, MenuPage.SmartLinkUpDeviceMessage, async (obj) =>
+                {
+                    // LinkUp Active Device again
+                    await Navigation.PushModalAsync(new SmartLinkUpPage());
+                });
+
+                MessagingCenter.Subscribe<MenuPage>(this, MenuPage.TermsConditionsMessage, async (obj) =>
+                {
+                    try
+                    {
+                        String terms = await _termsService.GetDecodedTermsConditions();
+                        await Navigation.PushModalAsync(new TermsPage(_container));
+                    }
+                    catch (Exception ex)
+                    {
+                        await DisplayAlert(Title, "Cannot fetch Terms and Conditions!", "OK");
+                    }
+                });
+
+                MessagingCenter.Subscribe<SmartLinkUpPage>(this, SmartLinkUpPage.LinkUpFinishedMessage, async (obj) =>
+                {
+                    await LoadDevicesAsync();
+                });
+
+                // Events
+                DeviceDriveManager.Current.StateChanged += HandleSDKStateChanged;
 				DeviceDriveManager.Current.AuthenticatedChanged += HandleAuthenticationChanged;
 				DeviceDriveManager.Current.DevicesUpdated += HandleDevicesUpdated;
 				DeviceDriveManager.Current.DeviceUpdated += HandleDeviceUpdated;
@@ -96,7 +133,8 @@ namespace LightSwitch
 					{
 						MessagingCenter.Unsubscribe<StartupPage>(this, StartupPage.AuthenticatedMessage);
 						await LoadDevicesAsync();
-					});
+                        await CheckTermsConditionsAcceptance();
+                    });
 
 					await Navigation.PushModalAsync(new StartupPage());
 				}
@@ -104,24 +142,59 @@ namespace LightSwitch
 				{
 					// Check for authentication
 					if ((await DeviceDriveManager.Current.Authentication.TryGetIsAuthenticatedAsync()))
+                    {
 						await LoadDevicesAsync();
+                        await CheckTermsConditionsAcceptance();
+                    }
 					else
 						await Navigation.PushModalAsync(new StartupPage());
 				}
 			};
 
 			// Start initialization
-			Task.Run(async () => await DeviceDriveManager.Current.InitializeAsync(
-				"78795c26-9ca8-4251-8cbb-0cb13850026f", "f2026cb1-27a0-4f1e-9fe3-12f46e070f03", _platform));	
+			Task.Run(async () =>
+                {
+                    try
+                    {
+                        await DeviceDriveManager.Current.InitializeAsync("78795c26-9ca8-4251-8cbb-0cb13850026f", "f2026cb1-27a0-4f1e-9fe3-12f46e070f03", _platform);
+                    }
+                    catch(Exception ex)
+                    {
+                        await DisplayAlert(Title, "Cannot initialize DeviceDriveManager!", "OK");
+                    }
+                   
+                });	
 
 		}
 
-		#region Properties
+        private async Task CheckTermsConditionsAcceptance()
+        {
+           
+            // Check if Terms and Conditions are accepted, if not, show dialog
+            try
+            {
+                String terms = "";
+                terms = await _termsService.GetDecodedTermsConditions();
+                bool accepted = await _termsService.Check();
+                if (!accepted)
+                {
+                    await Navigation.PushModalAsync(new TermsPage(_container));
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert(Title, "Cannot fetch Terms and Conditions!", "OK");
+            }
 
-		/// <summary>
-		/// The StatusText property.
-		/// </summary>
-		public static BindableProperty StatusTextProperty = BindableProperty.Create(
+            
+        }
+
+        #region Properties
+
+        /// <summary>
+        /// The StatusText property.
+        /// </summary>
+        public static BindableProperty StatusTextProperty = BindableProperty.Create(
 			nameof(StatusText), typeof(string), typeof(MainPage), null,
 			BindingMode.OneWay);
 
@@ -133,10 +206,76 @@ namespace LightSwitch
 			get { return (string)GetValue(StatusTextProperty); }
 			set { SetValue(StatusTextProperty, value); }
 		}
-		/// <summary>
-		/// The IsDevicesVisible property.
-		/// </summary>
-		public static BindableProperty IsDevicesVisibleProperty =
+
+        /// <summary>
+        /// The StatusText property.
+        /// </summary>
+        public static BindableProperty LightBulbSwitchProperty = BindableProperty.Create(
+            nameof(LightBulbSwitch), typeof(bool), typeof(MainPage), false,
+            BindingMode.OneWay);
+
+        /// <summary>
+        /// Gets or sets the StatusText of the MainPage instance.
+        /// </summary>
+        public bool LightBulbSwitch
+        {
+            get { return (bool)GetValue(LightBulbSwitchProperty); }
+            set {
+                SetValue(LightBulbSwitchProperty, value);
+                lightBulbTop.Source = (value) ? ImageSource.FromFile("light_bulb_top_on.png") : ImageSource.FromFile("light_bulb_top_off.png");
+                ApplyTint(value);
+            }
+        }
+
+        private void ApplyTint(bool value)
+        {
+            lightBulbTop.Effects.Clear();
+            lightBulbTop.Effects.Add(CreateTintImageEffect(value));
+            if (Device.RuntimePlatform == Device.iOS)
+            {
+                //on iOS when we enter the screen, UIImageView.Image is null, in this case we have to set the effect again to be visible.
+                Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+                {
+                    lightBulbTop.Effects.Clear();
+                    lightBulbTop.Effects.Add(CreateTintImageEffect(LightBulbSwitch));
+                    return false;
+                });
+            }
+        }
+
+        private Effect CreateTintImageEffect(bool value)
+        {
+            TintImageEffect tie = new TintImageEffect();
+            int k1 = (int)Math.Round(1.5 * LightBulbIntensity) + 105;
+            int k2 = (int)Math.Round(0.9 * LightBulbIntensity) + 165;
+            tie.TintColor = value ? (Device.RuntimePlatform == Device.Android ? Color.FromRgb(k1, k1, k1) : Color.FromRgb(k2, k2, 0)) : Color.Transparent;
+            return tie;
+        }
+
+        /// <summary>
+        /// The StatusText property.
+        /// </summary>
+        public static BindableProperty LightBulbIntensityProperty = BindableProperty.Create(
+            nameof(LightBulbIntensity), typeof(int), typeof(MainPage), 50,
+            BindingMode.OneWay);
+
+        /// <summary>
+        /// Gets or sets the StatusText of the MainPage instance.
+        /// </summary>
+        public int LightBulbIntensity
+        {
+            get { return (int)GetValue(LightBulbIntensityProperty); }
+            set {
+                SetValue(LightBulbIntensityProperty, value);
+                lightBulbIntensitySlider.Value = value;
+                ApplyTint(LightBulbSwitch);
+            }
+        }
+
+        /// <summary>
+        /// The IsDevicesVisible property.
+        /// </summary>
+        public static BindableProperty IsDevicesVisibleProperty =
 			BindableProperty.Create(nameof(IsDevicesVisible), typeof(bool), typeof(MainPage), false,
 				BindingMode.TwoWay, null, propertyChanged: (bindable, oldValue, newValue) =>
 				{
@@ -153,10 +292,30 @@ namespace LightSwitch
 			set { SetValue(IsDevicesVisibleProperty, value); }
 		}
 
-		/// <summary>
-		/// The IsLoadingDeviceProperties property.
-		/// </summary>
-		public static BindableProperty IsLoadingDevicePropertiesProperty =
+        /// <summary>
+        /// The IsDevicesVisible property.
+        /// </summary>
+        public static BindableProperty IsLightBulbVisibleProperty =
+            BindableProperty.Create(nameof(IsLightBulbVisible), typeof(bool), typeof(MainPage), false,
+                BindingMode.TwoWay, null, propertyChanged: (bindable, oldValue, newValue) =>
+                {
+                    var ctrl = (MainPage)bindable;
+                    ctrl.IsLightBulbVisible = (bool)newValue;
+                });
+
+        /// <summary>
+        /// Gets or sets the IsDevicesVisible of the MainPage instance.
+        /// </summary>
+        public bool IsLightBulbVisible
+        {
+            get { return (bool)GetValue(IsLightBulbVisibleProperty); }
+            set { SetValue(IsLightBulbVisibleProperty, value); }
+        }
+
+        /// <summary>
+        /// The IsLoadingDeviceProperties property.
+        /// </summary>
+        public static BindableProperty IsLoadingDevicePropertiesProperty =
 			BindableProperty.Create(nameof(IsLoadingDeviceProperties), typeof(bool), typeof(MainPage), true,
 				BindingMode.TwoWay, null, propertyChanged: (bindable, oldValue, newValue) =>
 				{
@@ -222,7 +381,10 @@ namespace LightSwitch
 			{
 				if (!DeviceDriveManager.Current.IsInitialized)
 					return null;
-				
+
+                if (DeviceDriveManager.Current.Preferences == null)
+                    return null;
+
 				var id = DeviceDriveManager.Current.Preferences.GetObjectForKey(
 					() => Devices.FirstOrDefault()?.UserDeviceId);
 
@@ -243,10 +405,15 @@ namespace LightSwitch
 		/// </summary>
 		public string SelectedDeviceName { get { return SelectedDevice?.Name; } }
 
-		/// <summary>
-		/// Returns the list of properties for the selected device
+        /// <summary>
+		/// Returns the name of the selected device
 		/// </summary>
-		public ObservableCollection<DevicePropertyModel> SelectedDeviceProperties { get { return _selectedDeviceProperties; } }
+		public int SelectedDeviceId { get { return SelectedDevice != null ? SelectedDevice.UserDeviceId : -1; } }
+
+        /// <summary>
+        /// Returns the list of properties for the selected device
+        /// </summary>
+        public ObservableCollection<DevicePropertyModel> SelectedDeviceProperties { get { return _selectedDeviceProperties; } }
 
 		/// <summary>
 		/// Returns the list of devices
@@ -293,14 +460,62 @@ namespace LightSwitch
 				return new Command(async () => await Navigation.PushModalAsync(new LinkUpPage()));
 			}
 		}
-		#endregion
 
-		#region Private Members
+        public Command TapLightBulbCommand
+        {
+            get
+            {
+                return new Command(async () =>
+                {
+                    if (IsLightBulbVisible) SendPropertyValueChange("switch", LightBulbSwitch ? "0" : "1");
+                    LightBulbSwitch = !LightBulbSwitch;
+                });
+            }
+        }
+        #endregion
 
-		/// <summary>
-		/// Loads devices useing the SDK
-		/// </summary>
-		async Task LoadDevicesAsync()
+        Boolean fireEvent = true;
+
+        private void LightBulbIntensitySliderValueChanged(object sender, ValueChangedEventArgs e)
+        {
+            if (fireEvent && IsLightBulbVisible)
+            {
+                fireEvent = false;
+                Device.StartTimer(TimeSpan.FromSeconds(2), () =>
+                {
+                    fireEvent = true;
+                    if (SelectedDeviceId != -1)
+                    {
+                        SendPropertyValueChange("intensity", (lightBulbIntensitySlider.Value).ToString(CultureInfo.InvariantCulture));
+                    }
+                    return false;
+                });
+            }
+        }
+
+        async void SendPropertyValueChange(String parameter, String value)
+        {
+            try
+            {
+                // We have a data value change - tell the service!
+                var device = await DeviceDriveManager.Current.GetCachedDeviceAsync(SelectedDeviceId);
+
+                // Signal that we updated the property
+                await DeviceDriveManager.Current.SetDevicePropertyValueAsync(device, parameter, value?.ToString());
+
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert(Title, $"{ex.Message}", "OK");
+            }
+        }
+
+        #region Private Members
+
+        /// <summary>
+        /// Loads devices useing the SDK
+        /// </summary>
+        async Task LoadDevicesAsync()
 		{
 			IsLoadingDevices = true;
 			IsDevicesVisible = !IsLoadingDevices;
@@ -344,38 +559,49 @@ namespace LightSwitch
 			IsLoadingDeviceProperties = true;
 			IsDevicePropertiesVisible = !IsLoadingDeviceProperties;
 
-			try
+            bool lightInterface = false;
+
+            try
 			{
-				// find device in list and update
+                // find device in list and update
 				var props = await DeviceDriveManager.Current.GetDevicePropertiesAsync(device);
-				if (props != null)
-				{
-					if (props.Count() != SelectedDeviceProperties.Count())
-					{
-						SelectedDeviceProperties.Clear();
-						foreach (var prop in props)
-							SelectedDeviceProperties.Add(prop);
-					}
-					else
-					{
-						foreach (var prop in props)
-						{
-							System.Diagnostics.Debug.WriteLine("Updating " + prop.Name + " = " + prop.Value);
-							var listItemProp = SelectedDeviceProperties.FirstOrDefault(p => p.Name == prop.Name);
-							if (listItemProp != null)
-							{
-								listItemProp.Name = prop.Name;
-								listItemProp.Value = prop.Value;
-								MessagingCenter.Send(this, PropertyUpdatedMessage, prop);
-							}
-						}
-					}
-				}
+                if (props != null)
+                {
+                    if (props.Count() != SelectedDeviceProperties.Count())
+                    {
+                        SelectedDeviceProperties.Clear();
+                        foreach (var prop in props)
+                        {
+                            if (prop.InterfaceName.Equals("com.devicedrive.light")) lightInterface = true;
+                            if (prop.Name.ToLower().Equals("switch")) LightBulbSwitch = prop.Value.Equals("1");
+                            if (prop.Name.ToLower().Equals("intensity")) LightBulbIntensity = (int)Math.Round(Double.Parse(prop.Value, CultureInfo.InvariantCulture));
+                            SelectedDeviceProperties.Add(prop);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var prop in props)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Updating " + prop.Name + " = " + prop.Value);
+                            var listItemProp = SelectedDeviceProperties.FirstOrDefault(p => p.Name == prop.Name);
+                            if (listItemProp != null)
+                            {
+                                listItemProp.Name = prop.Name;
+                                listItemProp.Value = prop.Value;
+                                if (prop.Name.ToLower().Equals("switch")) LightBulbSwitch = prop.Value.Equals("1");
+                                if (prop.Name.ToLower().Equals("intensity")) LightBulbIntensity = (int)Math.Round(Double.Parse(prop.Value, CultureInfo.InvariantCulture));
+
+                                MessagingCenter.Send(this, PropertyUpdatedMessage, prop);
+                            }
+                        }
+                    }
+                }
 			}
 			finally
 			{
 				IsLoadingDeviceProperties = false;
 				IsDevicePropertiesVisible = !IsLoadingDeviceProperties;
+                IsLightBulbVisible = lightInterface;
 			}
 		}
 
@@ -409,7 +635,8 @@ namespace LightSwitch
 			else
 			{
 				IsDevicesVisible = true;
-			}
+                await CheckTermsConditionsAcceptance();
+            }
 		}
 
 		/// <summary>

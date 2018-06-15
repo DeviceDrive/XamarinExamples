@@ -10,8 +10,10 @@ namespace LightSwitch
 	{
 		public const string DeleteActiveDeviceMessage = "DeleteActiveDeviceMessage";
 		public const string LinkUpActiveDeviceMessage = "LinkUpActiveDeviceMessage";
+        public const string SmartLinkUpDeviceMessage = "SmartLinkUpDeviceMessage";
+        public const string TermsConditionsMessage = "TermsConditionsMessage";
 
-		public MenuPage()
+        public MenuPage()
 		{
 			Title = "Menu";
 			Device.OnPlatform(() => Icon = "MenuButton");
@@ -94,11 +96,36 @@ namespace LightSwitch
 				});
 			}
 		}
-		#endregion
 
-		#region Private Members
+        public Command SmartLinkUpDeviceCommand
+        {
+            get
+            {
+                return new Command(() =>
+                {
+                    HideMenuPage();
+                    MessagingCenter.Send(this, SmartLinkUpDeviceMessage);
+                });
+            }
+        }
 
-		private void HideMenuPage()
+        public Command TermsConditionsCommand
+        {
+            get
+            {
+                return new Command(() =>
+                {
+                    HideMenuPage();
+                    MessagingCenter.Send(this, TermsConditionsMessage);
+                });
+            }
+        }
+
+        #endregion
+
+        #region Private Members
+
+        private void HideMenuPage()
 		{
 			var p = (Application.Current.MainPage as MasterDetailPage);
 			if (p != null)

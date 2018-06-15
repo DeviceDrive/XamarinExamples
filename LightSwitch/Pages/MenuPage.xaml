@@ -8,6 +8,8 @@
 			<Button Text="Log Out" Command="{Binding SignOutCommand}"/>
 			<Button Text="Delete Active Device" Command="{Binding DeleteActiveDeviceCommand}"/>
 			<Button Text="LinkUp Active Device" Command="{Binding LinkUpActiveDeviceCommand}"/>
+            <Button Text="SmartLinkUp Device" Command="{Binding SmartLinkUpDeviceCommand}"/>
+            <Button Text="Terms/Conditions" Command="{Binding TermsConditionsCommand}"/>
 		</StackLayout>
 	</ContentPage.Content>
 </ContentPage>

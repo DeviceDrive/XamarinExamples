@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage 
+		xmlns="http://xamarin.com/schemas/2014/forms" 
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+		xmlns:controls="clr-namespace:LightSwitch;assembly=LightSwitch"
+		x:Class="LightSwitch.SmartLinkUpPage">
+	<ContentPage.Content>
+
+		<ContentView Padding="22,44,22,22">
+
+			<controls:WizardLayout Page="{Binding ActivePageNumber}">
+
+				<!-- Enter name of new device -->
+				<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
+					<Label HorizontalTextAlignment="Center" Text="Enter name for your new LightSwitch device"/>
+					<Entry Placeholder="Enter Device Name" Text="{Binding DeviceName}"/>
+					<StackLayout Orientation="Horizontal" Spacing="24" HorizontalOptions="FillAndExpand">
+						<Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand" Style="{StaticResource RoundButtonStyle}"/>
+						<Button Text="Next" Command="{Binding EnterWifiPasswordCommand}" HorizontalOptions="FillAndExpand" Style="{StaticResource RoundButtonStyle}"/>
+					</StackLayout>
+				</StackLayout>
+
+				<!-- Enter Wifi Password  -->
+				<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
+					<Label HorizontalTextAlignment="Center" Text="Enter wifi password for the wifi network:"/>
+					<Label HorizontalTextAlignment="Center" FontAttributes="Bold" Text="{Binding WifiNetworkName}"/>
+					<Entry Placeholder="Enter Wifi Password" Text="{Binding WifiPassword}" Keyboard="Default" IsPassword="true"/>
+                    <Button Text="Next" Command="{Binding ReadyForSmartLinkUpCommand}" Style="{StaticResource RoundButtonStyle}"/>
+				</StackLayout>
+
+				<!-- Wait for user to start SmartLinkup-->
+
+                <StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
+                    <Label HorizontalTextAlignment="Center" Text="Before you start, please make sure your device is ready for SmartLinkUp."></Label>
+                    <StackLayout Orientation="Horizontal" Spacing="24" HorizontalOptions="FillAndExpand">
+                        <Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand" Style="{StaticResource RoundButtonStyle}"/>
+                        <Button Text="Next" Command="{Binding StartSmartLinkUpCommand}" HorizontalOptions="FillAndExpand" Style="{StaticResource RoundButtonStyle}"/>
+                    </StackLayout>
+                </StackLayout>
+
+                <!-- Configure device -->
+				<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
+					<Label Text="Please wait while we configure your device..." HorizontalTextAlignment="Center"/>
+					<ActivityIndicator IsRunning="true" HorizontalOptions="Center"/>
+					<Label Text="{Binding RegistrationProgress}" HorizontalTextAlignment="Center"/>
+					<Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="FillAndExpand" Style="{StaticResource RoundButtonStyle}"/>
+				</StackLayout>
+
+				<!-- Done -->
+				<StackLayout Padding="24" Spacing="24" VerticalOptions ="Center">
+					<Label Text="Your LightSwitch device was successfully linked up!" HorizontalTextAlignment="Center"/>
+					<Button Text="Done" Command="{Binding DoneCommand}" HorizontalOptions="FillAndExpand" Style="{StaticResource RoundButtonStyle}"/>
+				</StackLayout>
+				
+			</controls:WizardLayout>
+			
+		</ContentView>
+		
+	</ContentPage.Content>
+</ContentPage>

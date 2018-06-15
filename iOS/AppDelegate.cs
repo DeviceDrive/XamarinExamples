@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DeviceDrive.SDK;
 using DeviceDrive.SDK.Touch;
+using DeviceDrive.SDK.Touch.Providers;
 using Foundation;
 using UIKit;
 

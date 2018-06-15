@@ -27,20 +27,33 @@
 				<StackLayout Orientation="Vertical" Padding="24" Spacing="14">
 					<Label Text="Selected Device:" HorizontalTextAlignment="Center"/>
 					<Button Text="{Binding SelectedDeviceName}" Command="{Binding SelectDeviceCommand}" Style="{StaticResource ButtonStyle}" BackgroundColor="#127dc9" TextColor="White"></Button>
-					<Grid>
-						<ListView ItemsSource="{Binding SelectedDeviceProperties}"
-							SeparatorVisibility="None"
-							IsVisible="{Binding IsDevicePropertiesVisible}"
-							ItemTemplate="{StaticResource PropertyTemplateSelector}">
-						</ListView>
-						<Grid IsVisible="{Binding IsLoadingDeviceProperties}">
-							<StackLayout Orientation="Vertical" HorizontalOptions="Center">
-								<ActivityIndicator IsRunning="true" VerticalOptions="Center" HorizontalOptions="Center"></ActivityIndicator>
-								<Label VerticalOptions="Center" Text="{Binding StatusText}"/>
-							</StackLayout>
-						</Grid>
-					</Grid>
-				</StackLayout>
+
+                    <StackLayout IsVisible="{Binding IsLightBulbVisible}" Orientation="Vertical" Padding="0" HorizontalOptions="Center">
+                        <StackLayout Orientation="Vertical" Padding="0" Spacing="0" HorizontalOptions="Center" VerticalOptions="FillAndExpand">
+                            <Image x:Name="lightBulbTop" Source="light_bulb_top_off.png" HeightRequest="58">
+                                <Image.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding TapLightBulbCommand}" />
+                                </Image.GestureRecognizers>
+                            </Image>
+                            <Image Source="light_bulb_bottom.png" HeightRequest="22"></Image>
+                        </StackLayout>
+                        <Slider x:Name="lightBulbIntensitySlider" HorizontalOptions="Center" WidthRequest="150" HeightRequest="30" Maximum="100.0" Minimum="0.0" Value="{Binding LightBulbIntensity}" ValueChanged="LightBulbIntensitySliderValueChanged"></Slider>
+                    </StackLayout>
+                        
+                    <ListView ItemsSource="{Binding SelectedDeviceProperties}"
+						SeparatorVisibility="None"
+						IsVisible="{Binding IsDevicePropertiesVisible}"
+						ItemTemplate="{StaticResource PropertyTemplateSelector}">
+                    </ListView>
+
+                    <Grid IsVisible="{Binding IsLoadingDeviceProperties}">
+                        <StackLayout Orientation="Vertical" HorizontalOptions="Center">
+                            <ActivityIndicator IsRunning="true" VerticalOptions="Center" HorizontalOptions="Center"></ActivityIndicator>
+                            <Label VerticalOptions="Center" Text="{Binding StatusText}"/>
+                        </StackLayout>
+                    </Grid>
+
+                </StackLayout>
 
 				<StackLayout HeightRequest="70" Grid.Row="1" Spacing="0" Padding="0">
 					<BoxView BackgroundColor="Gray" HeightRequest="0.5"/>
